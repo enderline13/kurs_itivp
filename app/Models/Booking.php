@@ -3,14 +3,14 @@ require_once __DIR__ . '/../DB.php';
 
 class Booking {
 
-    public static function create($userId, $restaurantId, $tableId, $startTime, $endTime, $guests, $notes = null) {
+    public static function create($userId, $restaurantId, $tableId, $startTime, $endTime, $guests, $status = 'confirmed', $notes = null) {
         $db = DB::get();
 
         $stmt = $db->prepare(
             "INSERT INTO bookings (user_id, restaurant_id, table_id, guests, start_time, end_time, status)
-             VALUES (?, ?, ?, ?, ?, ?, 'confirmed')"
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->bind_param("iiisss", $userId, $restaurantId, $tableId, $guests, $startTime, $endTime);
+        $stmt->bind_param("iiissss", $userId, $restaurantId, $tableId, $guests, $startTime, $endTime, $status);
         if (!$stmt->execute()) return false;
 
         $id = $db->insert_id;

@@ -53,35 +53,38 @@ function check_restaurant_hours($tableId, $date, $time) {
 }
 
 if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    Helpers::requirePostFields(['table_id', 'date', 'time', 'guests']);
-    
-    $tableId = intval($_POST['table_id']);
-    $date = $_POST['date'];
-    $time = $_POST['time'];
-    $guests = intval($_POST['guests']);
-    $table = TableModel::find($tableId);
-    
-    if (!$table) {
-        Helpers::json(['success' => false, 'message' => 'Столик не найден.']);
-    }
+     Helpers::requirePostFields(['table_id', 'date', 'time', 'guests']);
+ 
+$tableId = intval($_POST['table_id']);
+ $date = $_POST['date'];
+ $time = $_POST['time'];
+$guests = intval($_POST['guests']);
+ $table = TableModel::find($tableId);
+ 
+ if (!$table) {
+ Helpers::json(['success' => false, 'message' => 'Столик не найден.']);
+ }
 
-    $hoursCheck = check_restaurant_hours($tableId, $date, $time);
-    if (!$hoursCheck['valid']) {
-        Helpers::json(['success' => false, 'message' => $hoursCheck['message']]);
-    }
-
-    $isAvailable = Booking::isAvailable($tableId, $date, $time);
-    if (!$isAvailable) {
-        Helpers::json(['success' => false, 'message' => 'Столик уже занят на это время.']);
-    }
-
-    $ok = Booking::create($userId, $table['restaurant_id'], $tableId, $date, $time, $guests, 'confirmed');
+    $startTime = $date . ' ' . $time . ':00'; 
+    $endTime = date('Y-m-d H:i:s', strtotime($startTime . ' +1 hour')); 
     
-    if ($ok) {
-        Helpers::json(['success' => true, 'redirect' => 'profile.php']);
-    } else {
-        Helpers::json(['success' => false, 'message' => 'Не удалось создать бронь']);
-    }
+ $hoursCheck = check_restaurant_hours($tableId, $date, $time);
+ if (!$hoursCheck['valid']) {
+ Helpers::json(['success' => false, 'message' => $hoursCheck['message']]);
+ }
+
+ $isAvailable = Booking::isTableAvailable($tableId, $startTime, $endTime);
+ if (!$isAvailable) {
+ Helpers::json(['success' => false, 'message' => 'Столик уже занят на это время.']);
+ }
+
+ $ok = Booking::create($userId, $table['restaurant_id'], $tableId, $startTime, $endTime, $guests, 'confirmed');
+ 
+ if ($ok) {
+ Helpers::json(['success' => true, 'redirect' => 'profile.php']);
+ } else {
+ Helpers::json(['success' => false, 'message' => 'Не удалось создать бронь']);
+ }
 }
 
 if ($action === 'check_availability') {
@@ -92,13 +95,15 @@ if ($action === 'check_availability') {
     if (!$tableId || !$date || !$time) {
         Helpers::json(['available' => false, 'message' => 'Недостаточно данных для проверки']);
     }
+    $startTime = $date . ' ' . $time . ':00';
+    $endTime = date('Y-m-d H:i:s', strtotime($startTime . ' +1 hour'));
     
     $hoursCheck = check_restaurant_hours($tableId, $date, $time);
     if (!$hoursCheck['valid']) {
         Helpers::json(['available' => false, 'message' => $hoursCheck['message']]);
     }
     
-    $isAvailable = Booking::isAvailable($tableId, $date, $time);
+    $isAvailable = Booking::isTableAvailable($tableId, $startTime, $endTime);
     
     Helpers::json(['available' => $isAvailable]);
 }
@@ -112,7 +117,7 @@ if ($action === 'cancel' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         Helpers::json(['success' => false, 'message' => 'Бронь не найдена или принадлежит другому пользователю.']);
     }
     
-    $ok = Booking::updateStatus($bookingId, 'cancelled');
+    $ok = Booking::cancel($bookingId, $userId);
     
     Helpers::json(['success' => $ok]);
 }
