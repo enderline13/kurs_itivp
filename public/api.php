@@ -18,7 +18,8 @@ $allowed = [
     'admin',
     'owner',
     'restaurant_manage',
-    'table_manage'
+    'table_manage',
+    'hours_manage'
 ];
 
 if (in_array($file, $allowed)) {

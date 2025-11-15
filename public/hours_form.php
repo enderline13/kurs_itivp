@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>BookTable — Часы работы</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script defer src="js/main.js"></script>
+</head>
+<body>
+<header class="site-header">
+    <div class="site-wrap">
+        <h1 class="brand">BookTable — Владелец</h1>
+        <nav class="main-nav">
+            <a href="index.php">Главная</a>
+            <a href="owner_dashboard.php">Панель</a>
+            <a href="profile.php" id="nav-profile">Профиль</a>
+            <a href="#" id="nav-logout">Выйти</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <h2>Часы работы</h2>
+    <p>Ресторан: <strong id="r-name">...</strong></p>
+
+    <form id="hours-form">
+        <input type="hidden" name="restaurant_id" id="r-id" value="">
+        <div id="hours-inputs">
+            <div class="restaurant-card placeholder">Загрузка...</div>
+        </div>
+        
+        <div class="form-row" style="margin-top: 12px;">
+            <button type="submit" class="button">Сохранить</button>
+            <a class="button outline" href="owner_dashboard.php">Отмена</a>
+        </div>
+        <div id="form-msg" class="form-msg" role="status"></div>
+    </form>
+</main>
+
+<footer class="site-footer">
+    <div class="site-wrap">
+        <p>© 2025 BookTable</p>
+    </div>
+</footer>
+</body>
+</html>

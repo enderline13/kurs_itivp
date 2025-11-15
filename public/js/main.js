@@ -1,12 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
     var apiBase = '/api.php';
+    var appState = { owners: [] };
+    var dayNames = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
 
     async function checkAuth() {
         try {
             var resp = await fetch(apiBase + '?file=auth&action=check');
             if (!resp.ok) return;
             var json = await resp.json();
-
             var els = {
                 login: document.getElementById('nav-login'),
                 register: document.getElementById('nav-register'),
@@ -15,37 +16,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 admin: document.getElementById('nav-admin'),
                 owner: document.getElementById('nav-owner')
             };
-
             if (json.loggedIn) {
                 if (els.login) els.login.style.display = 'none';
                 if (els.register) els.register.style.display = 'none';
-
                 if (els.profile) els.profile.style.display = 'inline';
                 if (els.logout) els.logout.style.display = 'inline';
-
                 if (json.role === 'admin' && els.admin) {
                     els.admin.style.display = 'inline';
                 }
                 if (json.role === 'owner' && els.owner) {
                     els.owner.style.display = 'inline';
                 }
-                
             } else {
                 if (els.login) els.login.style.display = 'inline';
                 if (els.register) els.register.style.display = 'inline';
-
                 if (els.profile) els.profile.style.display = 'none';
                 if (els.logout) els.logout.style.display = 'none';
                 if (els.admin) els.admin.style.display = 'none';
                 if (els.owner) els.owner.style.display = 'none';
             }
-        } catch (e) {
-            
-        }
+        } catch (e) {}
     }
     
     checkAuth();
-
+    
     var logoutLink = document.getElementById('nav-logout');
     if (logoutLink) {
         logoutLink.addEventListener('click', async function (e) {
@@ -178,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-   var reservationForm = document.getElementById('reservation-form');
+    var reservationForm = document.getElementById('reservation-form');
     if (reservationForm) {
         fillReservationRestaurants();
         reservationForm.addEventListener('submit', async function (e) {
@@ -224,15 +218,12 @@ document.addEventListener('DOMContentLoaded', function () {
             var date = dateInput.value;
             var time = timeInput.value;
             var msgEl = document.getElementById('reservation-msg');
-
             if (!tableId || !date || !time) {
                 msgEl.textContent = '';
                 return;
             }
-            
             msgEl.style.color = '#555';
             msgEl.textContent = 'Проверка доступности...';
-
             try {
                 var params = new URLSearchParams({
                     file: 'booking',
@@ -243,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 var resp = await fetch(apiBase + '?' + params.toString());
                 var json = await resp.json();
-
                 if (json.available) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Столик свободен на это время!';
@@ -394,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('r-address').textContent = 'Адрес: ' + (json.address || '');
             document.getElementById('r-city').textContent = 'Город: ' + (json.city || '');
             document.getElementById('r-text').textContent = json.description || '';
+            
             var tablesList = document.getElementById('tables-list');
             tablesList.innerHTML = '';
             (json.tables || []).forEach(function (t) {
@@ -402,6 +393,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.innerHTML = '<div class="card-row"><div class="card-content"><strong>Стол №' + escapeHtml(String(t.id)) + '</strong><p>Места: ' + escapeHtml(String(t.seats)) + '</p></div><div class="card-actions"><a class="button" href="reservation.php?restaurant_id=' + encodeURIComponent(json.id) + '&table_id=' + encodeURIComponent(t.id) + '">Забронировать</a></div></div>';
                 tablesList.appendChild(el);
             });
+            
+            var hoursCont = document.getElementById('r-hours');
+            if (hoursCont && json.opening_hours) {
+                hoursCont.innerHTML = '';
+                json.opening_hours.forEach(function (h) {
+                    var el = document.createElement('p');
+                    var day = dayNames[h.weekday] || '';
+                    var time = h.is_closed ? 'Закрыто' : (h.open_time + ' - ' + h.close_time);
+                    el.innerHTML = '<strong>' + escapeHtml(day) + ':</strong> ' + escapeHtml(time);
+                    hoursCont.appendChild(el);
+                });
+            }
+
         } catch (err) {
             if (msgEl) msgEl.textContent = 'Невозможно загрузить данные ресторана';
         }
@@ -412,14 +416,47 @@ document.addEventListener('DOMContentLoaded', function () {
         loadAdminDashboard();
     }
     
+    var addUserForm = document.getElementById('add-user-form');
+    if (addUserForm) {
+        addUserForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            var data = new FormData(addUserForm);
+            data.append('action', 'add_user');
+            var msgEl = document.getElementById('add-user-msg');
+            msgEl.textContent = 'Создание...';
+            
+            try {
+                var resp = await fetch(apiBase + '?file=admin', { method: 'POST', body: data });
+                var json = await resp.json();
+                if (json.success) {
+                    msgEl.style.color = 'green';
+                    msgEl.textContent = 'Пользователь создан.';
+                    addUserForm.reset();
+                    loadAdminDashboard(); 
+                } else {
+                    msgEl.style.color = '#a11';
+                    msgEl.textContent = json.message || 'Ошибка';
+                }
+            } catch (err) {
+                msgEl.style.color = '#a11';
+                msgEl.textContent = 'Бэкенд недоступен';
+            }
+        });
+    }
+
     async function loadAdminDashboard() {
         var contUsers = document.getElementById('admin-users');
         var contRest = document.getElementById('admin-restaurants');
         try {
-            var resp = await fetch(apiBase + '?file=admin');
+            var ownerResp = await fetch(apiBase + '?file=admin&action=get_owners');
+            appState.owners = await ownerResp.json();
+            
+            var resp = await fetch(apiBase + '?file=admin&action=get_data');
             if (!resp.ok) throw new Error('Сервер вернул ошибку');
             var json = await resp.json();
             if(json.success === false) throw new Error(json.message);
+            
+            // 3. Рендер
             renderAdminUsers(json.users || []);
             renderAdminRestaurants(json.restaurants || []);
             
@@ -429,10 +466,52 @@ document.addEventListener('DOMContentLoaded', function () {
             contRest.querySelectorAll('.admin-delete-btn').forEach(function(btn) {
                 btn.addEventListener('click', handleDeleteAdmin);
             });
+            
+            contRest.querySelectorAll('.admin-owner-toggle-btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    var id = e.target.dataset.id;
+                    var form = document.getElementById('owner-form-' + id);
+                    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+                });
+            });
+            contRest.querySelectorAll('.admin-owner-save-btn').forEach(function(btn) {
+                btn.addEventListener('click', handleChangeOwner);
+            });
+
 
         } catch (err) {
             contUsers.innerHTML = '<div class="restaurant-card placeholder">Невозможно загрузить</div>';
             contRest.innerHTML = '<div class="restaurant-card placeholder">Невозможно загрузить</div>';
+        }
+    }
+
+    async function handleChangeOwner(e) {
+        var btn = e.target;
+        var rId = btn.dataset.id;
+        var sel = document.getElementById('owner-select-' + rId);
+        var newOwnerId = sel.value;
+        
+        if (!newOwnerId) {
+            alert('Выберите владельца');
+            return;
+        }
+        
+        var data = new FormData();
+        data.append('id', rId);
+        data.append('owner_id', newOwnerId);
+        data.append('action', 'change_owner');
+        
+        try {
+            var resp = await fetch(apiBase + '?file=admin', { method: 'POST', body: data });
+            var json = await resp.json();
+            if (json.success) {
+                alert('Владелец изменен');
+                document.getElementById('owner-form-' + rId).style.display = 'none';
+            } else {
+                alert(json.message || 'Ошибка');
+            }
+        } catch (err) {
+            alert('Бэкенд недоступен');
         }
     }
 
@@ -441,19 +520,15 @@ document.addEventListener('DOMContentLoaded', function () {
         var id = btn.dataset.id;
         var type = btn.dataset.type;
         var action = (type === 'user') ? 'delete_user' : 'delete_restaurant';
-
         if (!confirm('Вы уверены, что хотите удалить этот ' + type + '?')) return;
-        
         try {
             var data = new FormData();
             data.append('id', id);
             data.append('action', action);
-
             var resp = await fetch(apiBase + '?file=admin', {
                 method: 'POST',
                 body: data
             });
-            
             var json = await resp.json();
             if (json.success) {
                 loadAdminDashboard();
@@ -479,10 +554,27 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderAdminRestaurants(list) {
         var cont = document.getElementById('admin-restaurants');
         cont.innerHTML = '';
+        
+        var ownerOptions = '<option value="">Выберите владельца</option>';
+        (appState.owners || []).forEach(function(o) {
+            ownerOptions += '<option value="' + o.id + '">' + escapeHtml(o.full_name) + '</option>';
+        });
+        
         list.forEach(function (r) {
             var el = document.createElement('div');
             el.className = 'restaurant-card';
-            el.innerHTML = '<div class="card-row"><div class="card-content"><strong>' + escapeHtml(r.name) + '</strong><p>' + escapeHtml(r.city) + '</p></div><div class="card-actions"><button class="button outline admin-delete-btn" data-id="' + r.id + '" data-type="restaurant">Удалить</button></div></div>';
+            var html = '<div class="card-row"><div class="card-content"><strong>' + escapeHtml(r.name) + '</strong><p>' + escapeHtml(r.city) + '</p></div>';
+            html += '<div class="card-actions">';
+            html += '<button class="button outline admin-delete-btn" data-id="' + r.id + '" data-type="restaurant">Удалить</button>';
+            html += '<button class="button admin-owner-toggle-btn" data-id="' + r.id + '">Сменить владельца</button>';
+            html += '</div></div>';
+            
+            html += '<div class="admin-owner-form" id="owner-form-' + r.id + '" style="display:none; margin-top:10px;">';
+            html += '<select id="owner-select-' + r.id + '">' + ownerOptions + '</select> ';
+            html += '<button class="button admin-owner-save-btn" data-id="' + r.id + '">Сохранить</button>';
+            html += '</div>';
+            
+            el.innerHTML = html;
             cont.appendChild(el);
         });
     }
@@ -500,6 +592,30 @@ document.addEventListener('DOMContentLoaded', function () {
             if(json.success === false) throw new Error(json.message);
             renderOwnerRestaurants(json.restaurants || []);
             renderOwnerBookings(json.bookings || []);
+            
+            document.querySelectorAll('.owner-delete-btn').forEach(function(btn) {
+                btn.addEventListener('click', async function(e) {
+                    var id = e.target.dataset.id;
+                    if (!confirm('Удалить этот ресторан? Это действие необратимо.')) return;
+                    
+                    var data = new FormData();
+                    data.append('id', id);
+                    data.append('action', 'delete');
+                    
+                    try {
+                        var delResp = await fetch(apiBase + '?file=restaurant_manage', { method: 'POST', body: data });
+                        var delJson = await delResp.json();
+                        if (delJson.success) {
+                            loadOwnerDashboard();
+                        } else {
+                            alert(delJson.message || 'Ошибка удаления');
+                        }
+                    } catch(err) {
+                        alert('Бэкенд недоступен');
+                    }
+                });
+            });
+            
         } catch (err) {
             document.getElementById('owner-restaurants').innerHTML = '<div class="restaurant-card placeholder">Невозможно загрузить</div>';
             document.getElementById('owner-bookings').innerHTML = '<div class="restaurant-card placeholder">Невозможно загрузить</div>';
@@ -516,7 +632,12 @@ document.addEventListener('DOMContentLoaded', function () {
         list.forEach(function (r) {
             var el = document.createElement('div');
             el.className = 'restaurant-card';
-            el.innerHTML = '<div class="card-row"><div class="card-content"><strong>' + escapeHtml(r.name) + '</strong><p>' + escapeHtml(r.address) + '</p></div><div class="card-actions"><a class="button" href="restaurant_form.php?id=' + r.id + '">Редакт.</a><a class="button outline" href="tables_list.php?restaurant_id=' + r.id + '">Столики</a></div></div>';
+            el.innerHTML = '<div class="card-row"><div class="card-content"><strong>' + escapeHtml(r.name) + '</strong><p>' + escapeHtml(r.address) + '</p></div><div class="card-actions">'
+             + '<a class="button" href="restaurant_form.php?id=' + r.id + '">Редакт.</a>'
+             + '<a class="button" href="hours_form.php?restaurant_id=' + r.id + '">Часы</a>' // Новая кнопка
+             + '<a class="button outline" href="tables_list.php?restaurant_id=' + r.id + '">Столики</a>'
+             + '<button class="button outline owner-delete-btn" data-id="' + r.id + '">Удалить</button>' // Новая кнопка
+             + '</div></div>';
             cont.appendChild(el);
         });
     }
@@ -544,13 +665,11 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('form-title').textContent = 'Редактировать ресторан';
             loadRestaurantForEdit(rId);
         }
-
         restaurantForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             var data = new FormData(restaurantForm);
             var msgEl = document.getElementById('form-msg');
             msgEl.textContent = 'Сохранение...';
-
             try {
                 var resp = await fetch(apiBase + '?file=restaurant_manage', {
                     method: 'POST',
@@ -624,16 +743,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.innerHTML = '<div class="card-row"><div class="card-content"><strong>Стол №' + escapeHtml(String(t.id)) + '</strong><p>Места: ' + escapeHtml(String(t.seats)) + '</p></div><div class="card-actions"><a class="button" href="table_form.php?id=' + t.id + '&restaurant_id=' + t.restaurant_id + '">Редакт.</a><button class="button outline table-delete-btn" data-id="' + t.id + '">Удалить</button></div></div>';
                 cont.appendChild(el);
             });
-            
             cont.querySelectorAll('.table-delete-btn').forEach(function(btn) {
                 btn.addEventListener('click', async function(e) {
                     var id = e.target.dataset.id;
                     if (!confirm('Удалить этот столик?')) return;
-                    
                     var data = new FormData();
                     data.append('id', id);
                     data.append('action', 'delete');
-                    
                     try {
                         var delResp = await fetch(apiBase + '?file=table_manage', { method: 'POST', body: data });
                         var delJson = await delResp.json();
@@ -647,7 +763,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             });
-
         } catch (err) {
             cont.innerHTML = '<div class="restaurant-card placeholder">Ошибка загрузки.</div>';
         }
@@ -658,21 +773,17 @@ document.addEventListener('DOMContentLoaded', function () {
         var params = new URLSearchParams(window.location.search);
         var tId = params.get('id');
         var rId = params.get('restaurant_id');
-        
         document.getElementById('t-restaurant-id').value = rId;
         document.getElementById('cancel-table-btn').href = 'tables_list.php?restaurant_id=' + rId;
-
         if (tId) {
             document.getElementById('form-title').textContent = 'Редактировать столик';
             loadTableForEdit(tId);
         }
-
         tableForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             var data = new FormData(tableForm);
             var msgEl = document.getElementById('form-msg');
             msgEl.textContent = 'Сохранение...';
-
             try {
                 var resp = await fetch(apiBase + '?file=table_manage', {
                     method: 'POST',
@@ -706,6 +817,76 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } catch (err) {
             document.getElementById('form-msg').textContent = 'Не удалось загрузить данные';
+        }
+    }
+    
+    var hoursForm = document.getElementById('hours-form');
+    if (hoursForm) {
+        var params = new URLSearchParams(window.location.search);
+        var rId = params.get('restaurant_id');
+        if (!rId) {
+            document.getElementById('hours-inputs').innerHTML = 'ID Ресторана не найден';
+        } else {
+            document.getElementById('r-id').value = rId;
+            loadHoursForEdit(rId);
+        }
+        
+        hoursForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var data = new FormData(hoursForm);
+            var msgEl = document.getElementById('form-msg');
+            msgEl.textContent = 'Сохранение...';
+            
+            try {
+                var resp = await fetch(apiBase + '?file=hours_manage', { method: 'POST', body: data });
+                var json = await resp.json();
+                
+                if (json.success) {
+                    msgEl.style.color = 'green';
+                    msgEl.textContent = 'Часы сохранены.';
+                    window.location.href = 'owner_dashboard.php';
+                } else {
+                    msgEl.style.color = '#a11';
+                    msgEl.textContent = json.message || 'Ошибка сохранения';
+                }
+            } catch (err) {
+                 msgEl.style.color = '#a11';
+                 msgEl.textContent = 'Бэкенд недоступен';
+            }
+        });
+    }
+    
+    async function loadHoursForEdit(rId) {
+        var cont = document.getElementById('hours-inputs');
+        try {
+            var resp = await fetch(apiBase + '?file=restaurants&id=' + rId);
+            var json = await resp.json();
+            
+            if (!json.id) {
+                cont.innerHTML = 'Ресторан не найден';
+                return;
+            }
+            
+            document.getElementById('r-name').textContent = json.name;
+            cont.innerHTML = '';
+            
+            (json.opening_hours || []).forEach(function(h) {
+                var day = dayNames[h.weekday];
+                var closed = h.is_closed ? 'checked' : '';
+                
+                var el = document.createElement('div');
+                el.className = 'restaurant-card';
+                el.innerHTML = '<h4>' + day + '</h4>'
+                    + '<div class="form-row">'
+                    + '<label>Открыто <input type="time" name="open[' + h.weekday + ']" value="' + h.open_time + '"></label> '
+                    + '<label>Закрыто <input type="time" name="close[' + h.weekday + ']" value="' + h.close_time + '"></label> '
+                    + '<label>Выходной <input type="checkbox" name="closed[' + h.weekday + ']" ' + closed + '></label>'
+                    + '</div>';
+                cont.appendChild(el);
+            });
+            
+        } catch (err) {
+            cont.innerHTML = 'Ошибка загрузки часов';
         }
     }
 

@@ -75,6 +75,13 @@ class Restaurant {
         return ($stmt->affected_rows > 0);
     }
 
+    public static function updateOwner($id, $newOwnerId) {
+        $db = DB::get();
+        $stmt = $db->prepare("UPDATE restaurants SET owner_id = ? WHERE id = ?");
+        $stmt->bind_param("ii", $newOwnerId, $id);
+        $stmt->execute();
+        return ($stmt->affected_rows > 0);
+    }
     public static function delete($id) {
         $db = DB::get();
         

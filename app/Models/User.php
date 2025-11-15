@@ -38,14 +38,18 @@ class User {
         $res = $db->query("SELECT u.id, u.full_name, u.email, u.phone, r.name AS role_name FROM users u LEFT JOIN roles r ON u.role_id = r.id ORDER BY u.created_at DESC");
         return $res->fetch_all(MYSQLI_ASSOC);
     }
-
+    public static function findByRole($roleName) {
+        $db = DB::get();
+        $stmt = $db->prepare("SELECT u.id, u.full_name, u.email FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = ? ORDER BY u.full_name ASC");
+        $stmt->bind_param("s", $roleName);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
     public static function delete($id) {
         $db = DB::get();
         
-        // Владельцев удалять нельзя, пока у них есть рестораны
         $user = self::findById($id);
         if ($user['role_name'] === 'owner') {
-             // Простая проверка. В реальном приложении это должно быть сложнее.
             $r = $db->query("SELECT id FROM restaurants WHERE owner_id = $id LIMIT 1");
             if ($r->num_rows > 0) {
                 return false; 

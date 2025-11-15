@@ -2,6 +2,7 @@
 require_once __DIR__ . '/Helpers.php';
 require_once __DIR__ . '/models/Restaurant.php';
 require_once __DIR__ . '/models/TableModel.php';
+require_once __DIR__ . '/models/OpeningHours.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -15,6 +16,7 @@ if ($id) {
         Helpers::json(['success' => false, 'message' => 'Restaurant not found']);
     }
     $r['tables'] = TableModel::byRestaurant($r['id']);
+    $r['opening_hours'] = OpeningHours::getForRestaurant($r['id']);
     Helpers::json($r);
 } else {
     $filters = [];
