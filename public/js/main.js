@@ -456,7 +456,6 @@ document.addEventListener('DOMContentLoaded', function () {
             var json = await resp.json();
             if(json.success === false) throw new Error(json.message);
             
-            // 3. Рендер
             renderAdminUsers(json.users || []);
             renderAdminRestaurants(json.restaurants || []);
             
