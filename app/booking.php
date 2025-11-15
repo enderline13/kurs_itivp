@@ -1,10 +1,9 @@
 <?php
-// app/booking.php
 require_once __DIR__ . '/Helpers.php';
 require_once __DIR__ . '/DB.php';
 require_once __DIR__ . '/models/Booking.php';
 require_once __DIR__ . '/models/TableModel.php';
-require_once __DIR__ . '/models/OpeningHours.php'; // НОВОЕ ПОДКЛЮЧЕНИЕ
+require_once __DIR__ . '/models/OpeningHours.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -15,7 +14,6 @@ if (!$userId) {
     Helpers::json(['success' => false, 'message' => 'Требуется авторизация']);
 }
 
-// --- БЛОК ПРОВЕРКИ ЧАСОВ РАБОТЫ ---
 function check_restaurant_hours($tableId, $date, $time) {
     $tableData = TableModel::find(intval($tableId));
     if (!$tableData) {
@@ -25,7 +23,6 @@ function check_restaurant_hours($tableId, $date, $time) {
     $restaurantId = $tableData['restaurant_id'];
     $hours = OpeningHours::getForRestaurant($restaurantId);
     
-    // PHP date('w') возвращает 0 для Воскресенья, 6 для Субботы.
     $weekdayIndex = date('w', strtotime($date)); 
     
     $dayHours = null;
@@ -44,22 +41,17 @@ function check_restaurant_hours($tableId, $date, $time) {
         return ['valid' => false, 'message' => 'Ресторан закрыт в этот день.'];
     }
     
-    // Нормализация времени для сравнения
-    $openTime = $dayHours['open_time'];   // e.g., '09:00:00'
-    $closeTime = $dayHours['close_time']; // e.g., '22:00:00'
+    $openTime = $dayHours['open_time'];  
+    $closeTime = $dayHours['close_time']; 
     $requestTime = date('H:i:s', strtotime($time)); 
     
-    // Бронирование должно быть строго до времени закрытия
     if ($requestTime < $openTime || $requestTime >= $closeTime) {
         return ['valid' => false, 'message' => "Ресторан работает с {$openTime} до {$closeTime}. Выбранное время вне интервала."];
     }
 
     return ['valid' => true];
 }
-// ------------------------------------
 
-
-// 1. Создание бронирования
 if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     Helpers::requirePostFields(['table_id', 'date', 'time', 'guests']);
     
@@ -73,19 +65,16 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         Helpers::json(['success' => false, 'message' => 'Столик не найден.']);
     }
 
-    // НОВАЯ ПРОВЕРКА ЧАСОВ
     $hoursCheck = check_restaurant_hours($tableId, $date, $time);
     if (!$hoursCheck['valid']) {
         Helpers::json(['success' => false, 'message' => $hoursCheck['message']]);
     }
 
-    // ПРОВЕРКА НАЛИЧИЯ ДРУГИХ БРОНЕЙ (ОСТАЕТСЯ КАК БЫЛО)
     $isAvailable = Booking::isAvailable($tableId, $date, $time);
     if (!$isAvailable) {
         Helpers::json(['success' => false, 'message' => 'Столик уже занят на это время.']);
     }
 
-    // СОЗДАНИЕ БРОНИРОВАНИЯ
     $ok = Booking::create($userId, $table['restaurant_id'], $tableId, $date, $time, $guests, 'confirmed');
     
     if ($ok) {
@@ -95,7 +84,6 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// 2. Проверка доступности
 if ($action === 'check_availability') {
     $tableId = intval($_GET['table_id'] ?? 0);
     $date = $_GET['date'] ?? null;
@@ -105,19 +93,16 @@ if ($action === 'check_availability') {
         Helpers::json(['available' => false, 'message' => 'Недостаточно данных для проверки']);
     }
     
-    // НОВАЯ ПРОВЕРКА ЧАСОВ
     $hoursCheck = check_restaurant_hours($tableId, $date, $time);
     if (!$hoursCheck['valid']) {
         Helpers::json(['available' => false, 'message' => $hoursCheck['message']]);
     }
     
-    // ПРОВЕРКА НАЛИЧИЯ ДРУГИХ БРОНЕЙ (ОСТАЕТСЯ КАК БЫЛО)
     $isAvailable = Booking::isAvailable($tableId, $date, $time);
     
     Helpers::json(['available' => $isAvailable]);
 }
 
-// 3. Отмена бронирования
 if ($action === 'cancel' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     $bookingId = intval($data['id'] ?? 0);
