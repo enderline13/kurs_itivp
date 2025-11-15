@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>BookTable — Главная</title>
+    <title>BookTable — Управление столиком</title>
     <link rel="stylesheet" href="css/styles.css">
     <script defer src="js/main.js"></script>
 </head>
 <body>
 <header class="site-header">
     <div class="site-wrap">
-        <h1 class="brand">BookTable</h1>
-      <nav class="main-nav">
+        <h1 class="brand">BookTable — Владелец</h1>
+        <nav class="main-nav">
             <a href="index.php">Главная</a>
             <a href="restaurants.php">Рестораны</a>
             
@@ -26,23 +26,23 @@
 </header>
 
 <main class="container">
-    <section class="hero">
-        <h2>Онлайн-бронирование столиков</h2>
-        <p>Найди ресторан, выбери дату и время и бронируй столик онлайн.</p>
-        <div class="hero-actions">
-            <a class="button" href="restaurants.php">Посмотреть рестораны</a>
-            <a class="button outline" href="register.php">Создать аккаунт</a>
-        </div>
-    </section>
+    <h2 id="form-title">Добавить столик</h2>
+    
+    <form id="table-form">
+        <input type="hidden" name="id" id="t-id" value="">
+        <input type="hidden" name="restaurant_id" id="t-restaurant-id" value="">
 
-    <section class="intro">
-        <h3>Как это работает</h3>
-        <ol>
-            <li>Ищи ресторан</li>
-            <li>Выбирай дату и столик</li>
-            <li>Подтверждай бронь</li>
-        </ol>
-    </section>
+        <label>
+            Количество мест
+            <input type="number" name="seats" id="t-seats" required placeholder="2" min="1" value="2">
+        </label>
+
+        <div class="form-row">
+            <button type="submit" class="button">Сохранить</button>
+            <a class="button outline" id="cancel-table-btn" href="owner_dashboard.php">Отмена</a>
+        </div>
+        <div id="form-msg" class="form-msg" role="status"></div>
+    </form>
 </main>
 
 <footer class="site-footer">

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>BookTable — Главная</title>
+    <title>BookTable — Ресторан</title>
     <link rel="stylesheet" href="css/styles.css">
     <script defer src="js/main.js"></script>
 </head>
@@ -10,7 +10,7 @@
 <header class="site-header">
     <div class="site-wrap">
         <h1 class="brand">BookTable</h1>
-      <nav class="main-nav">
+        <nav class="main-nav">
             <a href="index.php">Главная</a>
             <a href="restaurants.php">Рестораны</a>
             
@@ -26,23 +26,23 @@
 </header>
 
 <main class="container">
-    <section class="hero">
-        <h2>Онлайн-бронирование столиков</h2>
-        <p>Найди ресторан, выбери дату и время и бронируй столик онлайн.</p>
-        <div class="hero-actions">
-            <a class="button" href="restaurants.php">Посмотреть рестораны</a>
-            <a class="button outline" href="register.php">Создать аккаунт</a>
+    <h2 id="r-name">Название ресторана</h2>
+    <div id="r-desc" class="restaurant-info">
+        <p id="r-address">Адрес: —</p>
+        <p id="r-city">Город: —</p>
+        <p id="r-text">Описание —</p>
+    </div>
+
+    <section class="tables">
+        <h3>Столики</h3>
+        <div id="tables-list">
+            <div class="restaurant-card placeholder">
+                <p>Загрузка столиков...</p>
+            </div>
         </div>
     </section>
 
-    <section class="intro">
-        <h3>Как это работает</h3>
-        <ol>
-            <li>Ищи ресторан</li>
-            <li>Выбирай дату и столик</li>
-            <li>Подтверждай бронь</li>
-        </ol>
-    </section>
+    <div id="restaurant-msg" class="form-msg" role="status"></div>
 </main>
 
 <footer class="site-footer">

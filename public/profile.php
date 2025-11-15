@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>BookTable — Главная</title>
+    <title>BookTable — Профиль</title>
     <link rel="stylesheet" href="css/styles.css">
     <script defer src="js/main.js"></script>
 </head>
@@ -10,7 +10,7 @@
 <header class="site-header">
     <div class="site-wrap">
         <h1 class="brand">BookTable</h1>
-      <nav class="main-nav">
+       <nav class="main-nav">
             <a href="index.php">Главная</a>
             <a href="restaurants.php">Рестораны</a>
             
@@ -26,23 +26,22 @@
 </header>
 
 <main class="container">
-    <section class="hero">
-        <h2>Онлайн-бронирование столиков</h2>
-        <p>Найди ресторан, выбери дату и время и бронируй столик онлайн.</p>
-        <div class="hero-actions">
-            <a class="button" href="restaurants.php">Посмотреть рестораны</a>
-            <a class="button outline" href="register.php">Создать аккаунт</a>
-        </div>
-    </section>
+    <h2>Профиль</h2>
 
-    <section class="intro">
-        <h3>Как это работает</h3>
-        <ol>
-            <li>Ищи ресторан</li>
-            <li>Выбирай дату и столик</li>
-            <li>Подтверждай бронь</li>
-        </ol>
-    </section>
+    <div id="profile-data" class="profile-block">
+        <p><strong>Имя:</strong> —</p>
+        <p><strong>Email:</strong> —</p>
+        <p><strong>Телефон:</strong> —</p>
+    </div>
+
+    <h3>Мои бронирования</h3>
+    <div id="my-bookings">
+        <div class="restaurant-card placeholder">
+            <p>Загрузка бронирований...</p>
+        </div>
+    </div>
+
+    <div id="profile-msg" class="form-msg" role="status"></div>
 </main>
 
 <footer class="site-footer">

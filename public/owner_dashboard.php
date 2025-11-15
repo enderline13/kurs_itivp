@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>BookTable — Главная</title>
+    <title>BookTable — Владелец</title>
     <link rel="stylesheet" href="css/styles.css">
     <script defer src="js/main.js"></script>
 </head>
 <body>
 <header class="site-header">
     <div class="site-wrap">
-        <h1 class="brand">BookTable</h1>
-      <nav class="main-nav">
+        <h1 class="brand">BookTable — Владелец</h1>
+       <nav class="main-nav">
             <a href="index.php">Главная</a>
             <a href="restaurants.php">Рестораны</a>
             
@@ -26,22 +26,23 @@
 </header>
 
 <main class="container">
-    <section class="hero">
-        <h2>Онлайн-бронирование столиков</h2>
-        <p>Найди ресторан, выбери дату и время и бронируй столик онлайн.</p>
-        <div class="hero-actions">
-            <a class="button" href="restaurants.php">Посмотреть рестораны</a>
-            <a class="button outline" href="register.php">Создать аккаунт</a>
+    <h2>Панель владельца</h2>
+
+    <section>
+        <h3>Мои рестораны</h3>
+        <div id="owner-restaurants">
+            <div class="restaurant-card placeholder">Загрузка...</div>
+        </div>
+        <div class="form-row" style="margin-top:12px">
+            <a class="button" href="restaurant_form.php">Добавить ресторан</a>
         </div>
     </section>
 
-    <section class="intro">
-        <h3>Как это работает</h3>
-        <ol>
-            <li>Ищи ресторан</li>
-            <li>Выбирай дату и столик</li>
-            <li>Подтверждай бронь</li>
-        </ol>
+    <section style="margin-top:18px">
+        <h3>Бронирования</h3>
+        <div id="owner-bookings">
+            <div class="restaurant-card placeholder">Загрузка...</div>
+        </div>
     </section>
 </main>
 

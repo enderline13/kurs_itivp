@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>BookTable — Главная</title>
+    <title>BookTable — Рестораны</title>
     <link rel="stylesheet" href="css/styles.css">
     <script defer src="js/main.js"></script>
 </head>
@@ -10,7 +10,7 @@
 <header class="site-header">
     <div class="site-wrap">
         <h1 class="brand">BookTable</h1>
-      <nav class="main-nav">
+       <nav class="main-nav">
             <a href="index.php">Главная</a>
             <a href="restaurants.php">Рестораны</a>
             
@@ -26,23 +26,35 @@
 </header>
 
 <main class="container">
-    <section class="hero">
-        <h2>Онлайн-бронирование столиков</h2>
-        <p>Найди ресторан, выбери дату и время и бронируй столик онлайн.</p>
-        <div class="hero-actions">
-            <a class="button" href="restaurants.php">Посмотреть рестораны</a>
-            <a class="button outline" href="register.php">Создать аккаунт</a>
-        </div>
-    </section>
+    <h2>Рестораны</h2>
 
-    <section class="intro">
-        <h3>Как это работает</h3>
-        <ol>
-            <li>Ищи ресторан</li>
-            <li>Выбирай дату и столик</li>
-            <li>Подтверждай бронь</li>
-        </ol>
-    </section>
+    <form id="search-form" class="search-form">
+        <label>
+            Город
+            <input type="text" name="city" placeholder="Город">
+        </label>
+        <label>
+            Мин. мест
+            <select name="seats">
+                <option value="">Любое</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="4">4+</option>
+            </select>
+        </label>
+        <div class="form-row">
+            <button type="submit" class="button">Поиск</button>
+            <button type="button" id="load-all" class="button outline">Показать все</button>
+        </div>
+    </form>
+
+    <div id="restaurants-list">
+        <div class="restaurant-card placeholder">
+            <h3>Загрузка...</h3>
+        </div>
+    </div>
+
+    <div id="restaurants-msg" class="form-msg" role="status"></div>
 </main>
 
 <footer class="site-footer">

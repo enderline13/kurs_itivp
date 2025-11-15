@@ -36,16 +36,6 @@ CREATE TABLE restaurant_tables (
   FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
 
-CREATE TABLE opening_hours (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  restaurant_id INT NOT NULL,
-  weekday TINYINT NOT NULL,
-  open_time TIME NOT NULL,
-  close_time TIME NOT NULL,
-  is_closed TINYINT(1) DEFAULT 0,
-  FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
-);
-
 CREATE TABLE bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
