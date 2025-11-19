@@ -1,5 +1,4 @@
 <?php
-// app/hours_manage.php
 require_once __DIR__ . '/Helpers.php';
 require_once __DIR__ . '/models/OpeningHours.php';
 require_once __DIR__ . '/models/Restaurant.php';

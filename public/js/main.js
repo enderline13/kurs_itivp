@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var resp = await fetch(apiBase + '?file=auth&action=logout', { method: 'POST' });
                 var json = await resp.json();
                 if (json.success) {
-                    window.location.href = 'index.php';
+                    window.location.href = 'index.html';
                 }
             } catch (err) {
                 alert('Ошибка выхода');
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (json.success) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Успешно. Перенаправление...';
-                    window.location.href = json.redirect || 'profile.php';
+                    window.location.href = json.redirect || 'profile.html';
                 } else {
                     msgEl.style.color = '#a11';
                     msgEl.textContent = json.message || 'Ошибка входа';
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (json.success) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Аккаунт создан. Перенаправление...';
-                    window.location.href = json.redirect || 'login.php';
+                    window.location.href = json.redirect || 'login.html';
                 } else {
                     msgEl.style.color = '#a11';
                     msgEl.textContent = json.message || 'Ошибка регистрации';
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
             html += '<p>Адрес: ' + escapeHtml(r.address || '') + '</p>';
             html += '<p>' + (r.description ? escapeHtml(r.description) : '') + '</p>';
             html += '</div><div class="card-actions">';
-            html += '<a class="button" href="restaurant.php?id=' + encodeURIComponent(r.id) + '">Открыть</a>';
+            html += '<a class="button" href="restaurant.html?id=' + encodeURIComponent(r.id) + '">Открыть</a>';
             html += '</div></div>';
             el.innerHTML = html;
             list.appendChild(el);
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (json.success) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Бронь создана';
-                    window.location.href = json.redirect || 'profile.php';
+                    window.location.href = json.redirect || 'profile.html';
                 } else {
                     msgEl.style.color = '#a11';
                     msgEl.textContent = json.message || 'Ошибка создания брони';
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
             (json.tables || []).forEach(function (t) {
                 var el = document.createElement('div');
                 el.className = 'restaurant-card';
-                el.innerHTML = '<div class="card-row"><div class="card-content"><strong>Стол №' + escapeHtml(String(t.id)) + '</strong><p>Места: ' + escapeHtml(String(t.seats)) + '</p></div><div class="card-actions"><a class="button" href="reservation.php?restaurant_id=' + encodeURIComponent(json.id) + '&table_id=' + encodeURIComponent(t.id) + '">Забронировать</a></div></div>';
+                el.innerHTML = '<div class="card-row"><div class="card-content"><strong>Стол №' + escapeHtml(String(t.id)) + '</strong><p>Места: ' + escapeHtml(String(t.seats)) + '</p></div><div class="card-actions"><a class="button" href="reservation.html?restaurant_id=' + encodeURIComponent(json.id) + '&table_id=' + encodeURIComponent(t.id) + '">Забронировать</a></div></div>';
                 tablesList.appendChild(el);
             });
             
@@ -632,9 +632,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var el = document.createElement('div');
             el.className = 'restaurant-card';
             el.innerHTML = '<div class="card-row"><div class="card-content"><strong>' + escapeHtml(r.name) + '</strong><p>' + escapeHtml(r.address) + '</p></div><div class="card-actions">'
-             + '<a class="button" href="restaurant_form.php?id=' + r.id + '">Редакт.</a>'
-             + '<a class="button" href="hours_form.php?restaurant_id=' + r.id + '">Часы</a>' // Новая кнопка
-             + '<a class="button outline" href="tables_list.php?restaurant_id=' + r.id + '">Столики</a>'
+             + '<a class="button" href="restaurant_form.html?id=' + r.id + '">Редакт.</a>'
+             + '<a class="button" href="hours_form.html?restaurant_id=' + r.id + '">Часы</a>' // Новая кнопка
+             + '<a class="button outline" href="tables_list.html?restaurant_id=' + r.id + '">Столики</a>'
              + '<button class="button outline owner-delete-btn" data-id="' + r.id + '">Удалить</button>' // Новая кнопка
              + '</div></div>';
             cont.appendChild(el);
@@ -678,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (json.success) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Сохранено. Перенаправление...';
-                    window.location.href = 'owner_dashboard.php';
+                    window.location.href = 'owner_dashboard.html';
                 } else {
                     msgEl.style.color = '#a11';
                     msgEl.textContent = json.message || 'Ошибка сохранения';
@@ -715,7 +715,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!rId) {
              tablesListPage.innerHTML = '<div class="restaurant-card">ID ресторана не указан</div>';
         } else {
-            document.getElementById('add-table-btn').href = 'table_form.php?restaurant_id=' + rId;
+            document.getElementById('add-table-btn').href = 'table_form.html?restaurant_id=' + rId;
             loadTablesForAdmin(rId);
             fetch(apiBase + '?file=restaurants&id=' + rId)
                 .then(r => r.json())
@@ -739,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function () {
             json.forEach(function (t) {
                 var el = document.createElement('div');
                 el.className = 'restaurant-card';
-                el.innerHTML = '<div class="card-row"><div class="card-content"><strong>Стол №' + escapeHtml(String(t.id)) + '</strong><p>Места: ' + escapeHtml(String(t.seats)) + '</p></div><div class="card-actions"><a class="button" href="table_form.php?id=' + t.id + '&restaurant_id=' + t.restaurant_id + '">Редакт.</a><button class="button outline table-delete-btn" data-id="' + t.id + '">Удалить</button></div></div>';
+                el.innerHTML = '<div class="card-row"><div class="card-content"><strong>Стол №' + escapeHtml(String(t.id)) + '</strong><p>Места: ' + escapeHtml(String(t.seats)) + '</p></div><div class="card-actions"><a class="button" href="table_form.html?id=' + t.id + '&restaurant_id=' + t.restaurant_id + '">Редакт.</a><button class="button outline table-delete-btn" data-id="' + t.id + '">Удалить</button></div></div>';
                 cont.appendChild(el);
             });
             cont.querySelectorAll('.table-delete-btn').forEach(function(btn) {
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var tId = params.get('id');
         var rId = params.get('restaurant_id');
         document.getElementById('t-restaurant-id').value = rId;
-        document.getElementById('cancel-table-btn').href = 'tables_list.php?restaurant_id=' + rId;
+        document.getElementById('cancel-table-btn').href = 'tables_list.html?restaurant_id=' + rId;
         if (tId) {
             document.getElementById('form-title').textContent = 'Редактировать столик';
             loadTableForEdit(tId);
@@ -792,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (json.success) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Сохранено.';
-                    window.location.href = 'tables_list.php?restaurant_id=' + data.get('restaurant_id');
+                    window.location.href = 'tables_list.html?restaurant_id=' + data.get('restaurant_id');
                 } else {
                     msgEl.style.color = '#a11';
                     msgEl.textContent = json.message || 'Ошибка сохранения';
@@ -843,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (json.success) {
                     msgEl.style.color = 'green';
                     msgEl.textContent = 'Часы сохранены.';
-                    window.location.href = 'owner_dashboard.php';
+                    window.location.href = 'owner_dashboard.html';
                 } else {
                     msgEl.style.color = '#a11';
                     msgEl.textContent = json.message || 'Ошибка сохранения';
